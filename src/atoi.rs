@@ -24,6 +24,11 @@ use crate::{NumError, NumErrorCause};
 /// and the returned value is the maximum magnitude integer of the
 /// appropriate `bit_size` and sign.
 ///
+/// # Example
+/// ```
+#[doc = include_str!("../examples/parse_int.rs")]
+/// ```
+///
 /// [integer literals]: https://go.dev/ref/spec#Integer_literals
 pub fn parse_int(s: &'static str, base: u8, bit_size: u8) -> Result<i64, NumError> {
     const FN_PARSE_INT: &'static str = "parse_int";
@@ -80,6 +85,11 @@ pub fn parse_int(s: &'static str, base: u8, bit_size: u8) -> Result<i64, NumErro
 /// Like [parse_int] but for unsigned numbers.
 ///
 /// A sign prefix is not permitted.
+/// 
+/// # Example
+/// ```
+#[doc = include_str!("../examples/parse_uint.rs")]
+/// ```
 pub fn parse_uint(s: &'static str, base: u8, bit_size: u8) -> Result<u64, NumError> {
     const FN_PARSE_UINT: &'static str = "parse_uint";
 
