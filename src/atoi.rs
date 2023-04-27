@@ -1,5 +1,30 @@
 use crate::{NumError, NumErrorCause};
 
+/// Interprets a string s in the given base (0, 2 to 36) and
+/// bit size (0 to 64) and returns the corresponding value i.
+///
+/// The string may begin with a leading sign: "+" or "-".
+///
+/// If the base argument is 0, the true base is implied by the string's
+/// prefix following the sign (if present): 2 for "0b", 8 for "0" or "0o",
+/// 16 for "0x", and 10 otherwise. Also, for argument base 0 only,
+/// underscore characters are permitted as defined by the Go syntax for
+/// [integer literals].
+///
+/// The `bit_size` argument specifies the integer type
+/// that the result must fit into. Bit sizes 0, 8, 16, 32, and 64
+/// correspond to int, int8, int16, int32, and int64.
+/// If `bit_size` is below 0 or above 64, an error is returned.
+///
+/// The errors that `parse_int` returns have concrete type [NumError][crate::NumError]
+/// and include `err.num = s`. If `s` is empty or contains invalid
+/// digits, `err.err` = [NumErrorCause::InvalidSyntax][crate::NumErrorCause::InvalidSyntax] and the returned value is 0;
+/// if the value corresponding to s cannot be represented by a
+/// signed integer of the given size, `err.err` = [NumErrorCause::OutOfRangeSigned][crate::NumErrorCause::OutOfRangeSigned]
+/// and the returned value is the maximum magnitude integer of the
+/// appropriate `bit_size` and sign.
+///
+/// [integer literals]: https://go.dev/ref/spec#Integer_literals
 pub fn parse_int(s: &'static str, base: u8, bit_size: u8) -> Result<i64, NumError> {
     const FN_PARSE_INT: &'static str = "parse_int";
 
@@ -9,11 +34,13 @@ pub fn parse_int(s: &'static str, base: u8, bit_size: u8) -> Result<i64, NumErro
 
     let s0 = s;
     let neg = s0.starts_with('-');
+    // Pick off leading sign.
     let s = s.strip_prefix(|c| (c == '+') || (c == '-')).unwrap_or(s);
 
+    // Convert unsigned and check range.
     let un = match parse_uint(s, base, bit_size) {
         Err(mut err) => match err.err {
-            NumErrorCause::RangeUnsigned { bound_hint } => bound_hint,
+            NumErrorCause::OutOfRangeUnsigned { bound_hint } => bound_hint,
             _ => {
                 err.func = FN_PARSE_INT.to_string();
                 err.num = s0.to_string();
@@ -50,6 +77,9 @@ pub fn parse_int(s: &'static str, base: u8, bit_size: u8) -> Result<i64, NumErro
     Ok(n)
 }
 
+/// Like [parse_int] but for unsigned numbers.
+///
+/// A sign prefix is not permitted.
 pub fn parse_uint(s: &'static str, base: u8, bit_size: u8) -> Result<u64, NumError> {
     const FN_PARSE_UINT: &'static str = "parse_uint";
 
@@ -60,8 +90,9 @@ pub fn parse_uint(s: &'static str, base: u8, bit_size: u8) -> Result<u64, NumErr
     let base0 = base == 0;
     let s0 = s;
     let (s, base) = match base {
-        2..=36 => (s.as_bytes(), base),
+        2..=36 => (s.as_bytes(), base), // valid base; nothing to do
         0 => {
+            // Look for octal, hex prefix.
             let mut b = 10;
             let mut s = s.as_bytes();
             if s[0] == b'0' {
@@ -93,6 +124,8 @@ pub fn parse_uint(s: &'static str, base: u8, bit_size: u8) -> Result<u64, NumErr
         bit_size
     };
 
+    // Cutoff is the smallest number such that cutoff*base > u64::MAX.
+    // Use compile-time constants for common cases.
     let cutoff = match base {
         10 => u64::MAX / 10 + 1,
         16 => u64::MAX / 16 + 1,
@@ -124,12 +157,14 @@ pub fn parse_uint(s: &'static str, base: u8, bit_size: u8) -> Result<u64, NumErr
         }
 
         if n >= cutoff {
+            // n*base overflows
             return Err(NumError::range_unsigned(FN_PARSE_UINT, s0, max_val));
         }
         n *= base as u64;
 
         let n1 = n.wrapping_add(d as u64);
         if (n1 < n) || (n1 > max_val) {
+            // n+d overflows
             return Err(NumError::range_unsigned(FN_PARSE_UINT, s0, max_val));
         }
         n = n1;

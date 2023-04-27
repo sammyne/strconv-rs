@@ -1,26 +1,33 @@
 use std::fmt::Debug;
 
+/// Records a failed conversion.
 #[derive(thiserror::Error, Debug, PartialEq, Eq)]
 #[error("strconv.{func}: parsing '{num}': {err}")]
 pub struct NumError {
+    /// the failing function (parse_int, parse_uint)
     pub func: String,
+    /// the input
     pub num: String,
+    /// the reason the conversion failed
     #[source]
     pub err: NumErrorCause,
 }
 
+/// Reason of conversion failed.
 #[derive(thiserror::Error, Debug, PartialEq, Eq)]
 pub enum NumErrorCause {
     #[error("invalid base {0}")]
-    Base(u8),
+    InvalidBase(u8),
     #[error("invalid bit size {0}")]
-    BitSize(u8),
-    #[error("signed value out of range: {bound_hint}")]
-    RangeSigned { bound_hint: i64 },
-    #[error("unsigned value out of range: {bound_hint}")]
-    RangeUnsigned { bound_hint: u64 },
+    InvalidBitSize(u8),
     #[error("invalid syntax")]
-    Syntax,
+    InvalidSyntax,
+    /// Indicates that a signed value is out of range for the target type.
+    #[error("signed value out of range: {bound_hint}")]
+    OutOfRangeSigned { bound_hint: i64 },
+    /// Indicates that a unsigned value is out of range for the target type.
+    #[error("unsigned value out of range: {bound_hint}")]
+    OutOfRangeUnsigned { bound_hint: u64 },
 }
 
 impl NumError {
@@ -32,7 +39,7 @@ impl NumError {
         Self {
             func: func.to_string(),
             num: s.to_string(),
-            err: NumErrorCause::Base(b),
+            err: NumErrorCause::InvalidBase(b),
         }
     }
 
@@ -44,7 +51,7 @@ impl NumError {
         Self {
             func: func.to_string(),
             num: s.to_string(),
-            err: NumErrorCause::BitSize(bit_size),
+            err: NumErrorCause::InvalidBitSize(bit_size),
         }
     }
 
@@ -56,7 +63,7 @@ impl NumError {
         Self {
             func: func.to_string(),
             num: s.to_string(),
-            err: NumErrorCause::RangeSigned { bound_hint },
+            err: NumErrorCause::OutOfRangeSigned { bound_hint },
         }
     }
 
@@ -68,7 +75,7 @@ impl NumError {
         Self {
             func: func.to_string(),
             num: s.to_string(),
-            err: NumErrorCause::RangeUnsigned { bound_hint },
+            err: NumErrorCause::OutOfRangeUnsigned { bound_hint },
         }
     }
 
@@ -80,7 +87,7 @@ impl NumError {
         Self {
             func: func.to_string(),
             num: s.to_string(),
-            err: NumErrorCause::Syntax,
+            err: NumErrorCause::InvalidSyntax,
         }
     }
 }
