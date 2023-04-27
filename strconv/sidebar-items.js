@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["NumErrorCause","Reason of conversion failed."]],"fn":[["parse_int","Interprets a string s in the given base (0, 2 to 36) and bit size (0 to 64) and returns the corresponding value i."],["parse_uint","Like [parse_int] but for unsigned numbers."]],"struct":[["NumError","Records a failed conversion."]]};
