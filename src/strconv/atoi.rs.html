@@ -223,6 +223,16 @@
 <a href="#223" id="223">223</a>
 <a href="#224" id="224">224</a>
 <a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{NumError, NumErrorCause};
 
 <span class="doccomment">/// Interprets a string s in the given base (0, 2 to 36) and
@@ -248,6 +258,11 @@
 /// signed integer of the given size, `err.err` = [NumErrorCause::OutOfRangeSigned][crate::NumErrorCause::OutOfRangeSigned]
 /// and the returned value is the maximum magnitude integer of the
 /// appropriate `bit_size` and sign.
+///
+/// # Example
+/// ```
+</span><span class="attr">#[doc = <span class="macro">include_str!</span>(<span class="string">&quot;../examples/parse_int.rs&quot;</span>)]
+</span><span class="doccomment">/// ```
 ///
 /// [integer literals]: https://go.dev/ref/spec#Integer_literals
 </span><span class="kw">pub fn </span>parse_int(s: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, base: u8, bit_size: u8) -&gt; <span class="prelude-ty">Result</span>&lt;i64, NumError&gt; {
@@ -305,6 +320,11 @@
 <span class="doccomment">/// Like [parse_int] but for unsigned numbers.
 ///
 /// A sign prefix is not permitted.
+/// 
+/// # Example
+/// ```
+</span><span class="attr">#[doc = <span class="macro">include_str!</span>(<span class="string">&quot;../examples/parse_uint.rs&quot;</span>)]
+</span><span class="doccomment">/// ```
 </span><span class="kw">pub fn </span>parse_uint(s: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, base: u8, bit_size: u8) -&gt; <span class="prelude-ty">Result</span>&lt;u64, NumError&gt; {
     <span class="kw">const </span>FN_PARSE_UINT: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;parse_uint&quot;</span>;
 
